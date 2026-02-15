@@ -1,0 +1,181 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "check-url",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "439139be-d82c-46ff-a41d-431233c73d02",
+      "name": "Webhook",
+      "webhookId": "ea057e48-59f3-4066-9da6-87771b073c9e"
+    },
+    {
+      "parameters": {
+        "url": "=https://www.virustotal.com/api/v3/domains/{{ $json.query.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-apikey",
+              "value": "74b0f53079bf60f23348912be34a7301b58a3a628ae4f2a3693c0d79edc18c99"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "55f56ca0-663f-4ad6-878b-bb2218b36bf4",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3de7f810-c16d-4340-ba8e-5fee3069e7b5",
+              "name": "malicious_score",
+              "value": "={{ $json.data.attributes.last_analysis_stats.malicious }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "20ef31c2-1160-4a52-812c-de88d92137f1",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "60889a9a-b9db-4c74-bf95-a7bec74cdfe5",
+              "leftValue": "={{ $json.malicious_score }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        656,
+        32
+      ],
+      "id": "e2c88820-f912-4668-aac6-26403360783b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "=🚨 THREAT DETECTED! A malicious URL was scanned.\nTarget URL:  {{ $('Webhook').item.json.query.url }}\nVirusTotal Score: {{ $json.malicious_score }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        864,
+        -64
+      ],
+      "id": "b91946ce-6002-4513-971a-0bb5f2452af3",
+      "name": "Discord",
+      "webhookId": "cfc29b88-f833-4857-a71d-3336de0975cf",
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "a2oIcVZTPOmD4MvW",
+          "name": "Discord Webhook account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "4884b1bf-f72e-49e0-8b44-83f48d789f7c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8e1a3167f60edeefcf84cc6f92b119c2a10d6c191298dc78773a7cd1b3407191"
+  },
+  "id": "-pU4P29U42ocgUOX3upe7",
+  "tags": []
+}
